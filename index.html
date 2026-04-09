@@ -390,16 +390,111 @@
     </div>
   </div>
 
-  <!-- 喝的 -->
+ <!-- 喝的 -->
   <div class="sec">喝的 DRINK <span style="font-size:10px;font-weight:400;color:var(--accent);font-family:'Noto Sans TC';letter-spacing:0;">真芳自家飲料</span></div>
   <div class="note">⚠️ 下方為真芳自家飲料，另點 <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" class="qingshan-link">青山</a> 飲料請自行扣除，不計入此表單</div>
 
-  <div class="card"><div class="card-header"><div class="item-name">紅茶牛奶 ⭐</div><div class="item-price">$55<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('mtea',55,-1)">−</button><div class="qnum" id="q-mtea">0</div><button class="qbtn" onclick="chg('mtea',55,1)">＋</button></div></div></div>
-  <div class="card"><div class="card-header"><div class="item-name">紅茶</div><div class="item-price">$40<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('btea',40,-1)">−</button><div class="qnum" id="q-btea">0</div><button class="qbtn" onclick="chg('btea',40,1)">＋</button></div></div></div>
-  <div class="card"><div class="card-header"><div class="item-name">無糖黑咖啡</div><div class="item-price">$50<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('bcoff',50,-1)">−</button><div class="qnum" id="q-bcoff">0</div><button class="qbtn" onclick="chg('bcoff',50,1)">＋</button></div></div></div>
-  <div class="card"><div class="card-header"><div class="item-name">無糖原味濃豆奶</div><div class="item-price">$50<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('soyp',50,-1)">−</button><div class="qnum" id="q-soyp">0</div><button class="qbtn" onclick="chg('soyp',50,1)">＋</button></div></div></div>
-  <div class="card"><div class="card-header"><div class="item-name">減糖芝麻濃豆奶</div><div class="item-price">$50<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('soys',50,-1)">−</button><div class="qnum" id="q-soys">0</div><button class="qbtn" onclick="chg('soys',50,1)">＋</button></div></div></div>
-  <div class="card"><div class="card-header"><div class="item-name">無糖冷泡紅茶</div><div class="item-price">$40<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('ctea',40,-1)">−</button><div class="qnum" id="q-ctea">0</div><button class="qbtn" onclick="chg('ctea',40,1)">＋</button></div></div></div>
+  <div class="card">
+    <div class="card-header" onclick="toggleV('mtea')">
+      <div class="item-name">紅茶牛奶 ⭐</div>
+      <div class="item-price">$55<small>元</small></div>
+      <span class="arrow" id="arr-mtea">▼</span>
+    </div>
+    <div class="vari-panel" id="v-mtea">
+      <div class="vari-label">溫度選擇</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('mtea','溫度','冰',this)">冰</button>
+        <button class="vbtn" onclick="selV('mtea','溫度','熱',this)">熱</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('mtea',55,-1)">−</button>
+          <div class="qnum" id="q-mtea">0</div>
+          <button class="qbtn" onclick="chg('mtea',55,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleV('btea')">
+      <div class="item-name">紅茶</div>
+      <div class="item-price">$40<small>元</small></div>
+      <span class="arrow" id="arr-btea">▼</span>
+    </div>
+    <div class="vari-panel" id="v-btea">
+      <div class="vari-label">溫度選擇</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('btea','溫度','冰',this)">冰</button>
+        <button class="vbtn" onclick="selV('btea','溫度','熱',this)">熱</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('btea',40,-1)">−</button>
+          <div class="qnum" id="q-btea">0</div>
+          <button class="qbtn" onclick="chg('btea',40,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleV('bcoff')">
+      <div class="item-name">無糖黑咖啡</div>
+      <div class="item-price">$50<small>元</small></div>
+      <span class="arrow" id="arr-bcoff">▼</span>
+    </div>
+    <div class="vari-panel" id="v-bcoff">
+      <div class="vari-label">溫度選擇</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('bcoff','溫度','冰',this)">冰</button>
+        <button class="vbtn" onclick="selV('bcoff','溫度','熱',this)">熱</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('bcoff',50,-1)">−</button>
+          <div class="qnum" id="q-bcoff">0</div>
+          <button class="qbtn" onclick="chg('bcoff',50,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">無糖原味濃豆奶 <span style="font-size:10px;color:var(--mid);font-weight:400;">冰</span></div>
+      <div class="item-price">$50<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('soyp',50,-1)">−</button>
+        <div class="qnum" id="q-soyp">0</div>
+        <button class="qbtn" onclick="chg('soyp',50,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">減糖芝麻濃豆奶 <span style="font-size:10px;color:var(--mid);font-weight:400;">冰</span></div>
+      <div class="item-price">$50<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('soys',50,-1)">−</button>
+        <div class="qnum" id="q-soys">0</div>
+        <button class="qbtn" onclick="chg('soys',50,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">無糖冷泡紅茶 <span style="font-size:10px;color:var(--mid);font-weight:400;">冰</span></div>
+      <div class="item-price">$40<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('ctea',40,-1)">−</button>
+        <div class="qnum" id="q-ctea">0</div>
+        <button class="qbtn" onclick="chg('ctea',40,1)">＋</button>
+      </div>
+    </div>
+  </div>
 
   <div style="height:20px;"></div>
 </div>
@@ -435,12 +530,12 @@ const ITEMS = {
   'milk-cs':  { name:'煉乳起司', price:50 },
   'straw-choco':{ name:'草莓巧克力', price:50 },
   'pb-choco': { name:'花生巧克力', price:50 },
-  'mtea':     { name:'紅茶牛奶', price:55, drink:true },
-  'btea':     { name:'紅茶', price:40, drink:true },
-  'bcoff':    { name:'黑咖啡', price:50, drink:true },
-  'soyp':     { name:'原味濃豆奶', price:50, drink:true },
-  'soys':     { name:'芝麻濃豆奶', price:50, drink:true },
-  'ctea':     { name:'冷泡紅茶', price:40, drink:true },
+  'mtea':     { name:'紅茶牛奶', price:55, drink:true, v:true },
+  'btea':     { name:'紅茶', price:40, drink:true, v:true },
+  'bcoff':    { name:'無糖黑咖啡', price:50, drink:true, v:true },
+  'soyp':     { name:'無糖原味濃豆奶', price:50, drink:true },
+  'soys':     { name:'減糖芝麻濃豆奶', price:50, drink:true },
+  'ctea':     { name:'無糖冷泡紅茶', price:40, drink:true },
 };
 
 const state = {};
