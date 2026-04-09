@@ -171,50 +171,30 @@
   <div class="sec"><span class="badge">招牌</span> 真芳三明治</div>
 
   <!-- 豬肉排 -->
-  <div class="card">
-    <div class="card-header" onclick="toggleV('zf-pig')">
-      <div class="item-name">真芳三明治・手打胛心豬肉排<span class="item-sub">特製吐司、自製檸檬醬、限量金瓜沙拉、高麗菜、切達起司、特製花生醬、大武山雞蛋</span></div>
-      <div class="item-price">$110<small>元</small></div>
-      <span class="arrow" id="arr-zf-pig">▼</span>
-    </div>
-    <div class="vari-panel" id="v-zf-pig">
-      <div class="vari-label">醬料選擇</div>
-      <div class="vari-opts" id="opt-zf-pig">
-        <button class="vbtn sel" onclick="selV('zf-pig','醬料','原味花生醬',this)">原味花生醬</button>
-        <button class="vbtn" onclick="selV('zf-pig','醬料','換花醬',this)">換花醬</button>
-      </div>
-      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
-        <div class="qty-ctrl">
-          <button class="qbtn minus" onclick="chg('zf-pig',110,-1)">−</button>
-          <div class="qnum" id="q-zf-pig">0</div>
-          <button class="qbtn" onclick="chg('zf-pig',110,1)">＋</button>
-        </div>
-      </div>
+<div class="card">
+  <div class="card-header">
+    <div class="item-name">真芳三明治・手打胛心豬肉排<span class="item-sub">特製吐司、自製檸檬醬、限量馬鈴薯金瓜沙拉、高麗菜、切達起司、特製花生醬、大武山雞蛋</span></div>
+    <div class="item-price">$110<small>元</small></div>
+    <div class="qty-ctrl">
+      <button class="qbtn minus" onclick="chg('zf-pig',110,-1)">−</button>
+      <div class="qnum" id="q-zf-pig">0</div>
+      <button class="qbtn" onclick="chg('zf-pig',110,1)">＋</button>
     </div>
   </div>
+</div>
 
   <!-- 舒肥雞 -->
-  <div class="card">
-    <div class="card-header" onclick="toggleV('zf-chk')">
-      <div class="item-name">真芳三明治・舒肥雞胸肉<span class="item-sub">特製吐司、自製檸檬醬、限量金瓜沙拉、高麗菜、切達起司、特製花生醬、大武山雞蛋</span></div>
-      <div class="item-price">$150<small>元</small></div>
-      <span class="arrow" id="arr-zf-chk">▼</span>
-    </div>
-    <div class="vari-panel" id="v-zf-chk">
-      <div class="vari-label">醬料選擇</div>
-      <div class="vari-opts">
-        <button class="vbtn sel" onclick="selV('zf-chk','醬料','原味花生醬',this)">原味花生醬</button>
-        <button class="vbtn" onclick="selV('zf-chk','醬料','換花醬',this)">換花醬</button>
-      </div>
-      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
-        <div class="qty-ctrl">
-          <button class="qbtn minus" onclick="chg('zf-chk',150,-1)">−</button>
-          <div class="qnum" id="q-zf-chk">0</div>
-          <button class="qbtn" onclick="chg('zf-chk',150,1)">＋</button>
-        </div>
-      </div>
+<div class="card">
+  <div class="card-header">
+    <div class="item-name">真芳三明治・舒肥雞胸肉<span class="item-sub">特製吐司、自製檸檬醬、限量馬鈴薯金瓜沙拉、高麗菜、切達起司、特製花生醬、大武山雞蛋</span></div>
+    <div class="item-price">$150<small>元</small></div>
+    <div class="qty-ctrl">
+      <button class="qbtn minus" onclick="chg('zf-chk',150,-1)">−</button>
+      <div class="qnum" id="q-zf-chk">0</div>
+      <button class="qbtn" onclick="chg('zf-chk',150,1)">＋</button>
     </div>
   </div>
+</div>
 
   <!-- 鹹的 -->
   <div class="sec">鹹的 SAVOURY</div>
@@ -442,8 +422,8 @@ const CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcIBvQjSx98
 
 // ─── ITEMS ────────────────────────────────────────────────
 const ITEMS = {
-  'zf-pig':    { name:'真芳三明治・豬肉排', price:110, v:true },
-  'zf-chk':   { name:'真芳三明治・舒肥雞', price:150, v:true },
+  'zf-pig':    { name:'真芳三明治・豬肉排', price:110 },
+  'zf-chk':   { name:'真芳三明治・舒肥雞', price:150 },
   'chk-egg':  { name:'雞肉蛋起司', price:110, v:true },
   'pig-egg':  { name:'豬肉蛋起司', price:75, v:true },
   'spy-egg':  { name:'辣肉蛋起司', price:75, v:true },
