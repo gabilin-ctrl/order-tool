@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公司點餐統計</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #C93B1A;
+    --red-light: #E8502A;
+    --cream: #FDF6ED;
+    --warm-gray: #F5EEE4;
+    --dark: #1A1209;
+    --mid: #5C4033;
+    --border: #D4B896;
+    --accent: #F0A500;
+    --green: #2E7D4F;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--cream); font-family: 'Noto Sans TC', sans-serif; color: var(--dark); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    background: var(--red);
+    padding: 18px 20px 14px;
+    text-align: center;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+  }
+  header h1 { font-family: 'Noto Serif TC', serif; font-weight: 900; font-size: 20px; color: white; letter-spacing: 2px; }
+  header .subtitle { font-size: 11px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+
+  /* TOTAL BAR */
+  .total-bar {
+    background: var(--dark); color: white;
+    padding: 10px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 64px; z-index: 99;
+    border-bottom: 2px solid var(--accent);
+  }
+  .total-bar .amount { font-family: 'Noto Serif TC', serif; font-size: 24px; font-weight: 900; color: var(--accent); }
+  .total-bar .label { font-size: 10px; color: rgba(255,255,255,0.55); }
+  .drink-note { font-size: 10px; background: rgba(240,165,0,0.15); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 5px 9px; line-height: 1.5; text-align: right; max-width: 180px; }
+  .qingshan-link { color: var(--accent); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+  .qingshan-link:hover { color: #ffc72c; }
+
+  /* TABS */
+  .tabs { display: flex; background: white; border-bottom: 2px solid var(--border); position: sticky; top: 110px; z-index: 98; }
+  .tab { flex: 1; padding: 11px 4px; text-align: center; font-size: 12px; font-weight: 500; color: var(--mid); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab.active { color: var(--red); border-bottom-color: var(--red); font-weight: 700; }
+
+  /* PANELS */
+  .panel { display: none; padding: 14px; }
+  .panel.active { display: block; }
+
+  /* SECTION TITLE */
+  .sec { font-family: 'Noto Serif TC', serif; font-size: 12px; font-weight: 700; color: var(--red); letter-spacing: 2px; margin: 18px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+  .sec:first-child { margin-top: 0; }
+  .badge { background: var(--red); color: white; font-size: 9px; padding: 2px 6px; border-radius: 10px; font-weight: 700; }
+
+  /* ITEM CARD */
+  .card { background: white; border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+  .card-header { display: flex; align-items: center; padding: 11px 13px; gap: 10px; cursor: pointer; }
+  .item-name { flex: 1; font-size: 14px; font-weight: 700; color: var(--dark); font-family: 'Noto Serif TC', serif; }
+  .item-sub { font-size: 10px; font-weight: 400; color: var(--mid); display: block; margin-top: 2px; font-family: 'Noto Sans TC', sans-serif; }
+  .item-price { font-size: 17px; font-weight: 900; color: var(--red); white-space: nowrap; font-family: 'Noto Serif TC', serif; }
+  .item-price small { font-size: 10px; font-weight: 400; color: var(--mid); }
+  .arrow { font-size: 9px; color: var(--mid); transition: transform 0.2s; }
+  .arrow.open { transform: rotate(180deg); }
+
+  /* QTY */
+  .qty-ctrl { display: flex; align-items: center; gap: 6px; background: var(--warm-gray); border-radius: 8px; padding: 2px 4px; }
+  .qbtn { width: 26px; height: 26px; border: none; background: var(--red); color: white; border-radius: 6px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; transition: background 0.15s; }
+  .qbtn:hover { background: var(--red-light); }
+  .qbtn.minus { background: var(--mid); }
+  .qbtn.minus:hover { background: var(--dark); }
+  .qnum { font-size: 15px; font-weight: 700; min-width: 18px; text-align: center; }
+
+  /* VARIANT */
+  .vari-panel { display: none; padding: 0 13px 13px; border-top: 1px solid var(--warm-gray); }
+  .vari-panel.open { display: block; }
+  .vari-label { font-size: 10px; font-weight: 700; color: var(--mid); letter-spacing: 1px; margin: 8px 0 5px; text-transform: uppercase; }
+  .vari-opts { display: flex; flex-wrap: wrap; gap: 5px; }
+  .vbtn { padding: 4px 11px; border: 1.5px solid var(--border); border-radius: 20px; background: white; font-size: 11px; color: var(--mid); cursor: pointer; transition: all 0.15s; }
+  .vbtn.sel { background: var(--red); border-color: var(--red); color: white; font-weight: 700; }
+  .vbtn:hover:not(.sel) { border-color: var(--red); color: var(--red); }
+
+  /* NOTE BOX */
+  .note { background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.3); border-radius: 8px; padding: 10px 13px; font-size: 11px; color: var(--mid); margin-bottom: 12px; line-height: 1.6; }
+
+  /* NAME INPUT */
+  .name-section { background: white; border: 2px solid var(--red); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .name-section label { font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 1px; display: block; margin-bottom: 6px; }
+  .name-input { width: 100%; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 13px; font-size: 14px; font-family: 'Noto Sans TC', sans-serif; color: var(--dark); outline: none; }
+  .name-input:focus { border-color: var(--red); }
+
+  /* SUBMIT BTN */
+  .submit-btn {
+    width: 100%; padding: 14px; background: var(--green); color: white;
+    border: none; border-radius: 10px; font-size: 15px;
+    font-family: 'Noto Serif TC', serif; font-weight: 700;
+    cursor: pointer; margin-top: 12px; letter-spacing: 1px;
+    transition: all 0.2s; box-shadow: 0 3px 10px rgba(46,125,79,0.3);
+  }
+  .submit-btn:hover { background: #235f3c; }
+  .submit-btn:disabled { background: var(--mid); box-shadow: none; cursor: not-allowed; }
+
+  /* SUCCESS STATE */
+  .success-box { text-align: center; padding: 30px 20px; }
+  .success-icon { font-size: 48px; margin-bottom: 12px; }
+  .success-title { font-family: 'Noto Serif TC', serif; font-size: 20px; font-weight: 900; color: var(--green); margin-bottom: 8px; }
+  .success-sub { font-size: 13px; color: var(--mid); line-height: 1.7; }
+  .reorder-btn { margin-top: 20px; padding: 10px 24px; background: white; border: 2px solid var(--red); border-radius: 8px; color: var(--red); font-size: 13px; font-family: 'Noto Sans TC', sans-serif; font-weight: 700; cursor: pointer; }
+
+  /* SUMMARY TAB */
+  .load-btn { width: 100%; padding: 12px; background: var(--dark); color: white; border: none; border-radius: 10px; font-size: 14px; font-family: 'Noto Serif TC', serif; font-weight: 700; cursor: pointer; letter-spacing: 1px; margin-bottom: 14px; }
+  .order-card { background: white; border: 1.5px solid var(--border); border-radius: 10px; margin-bottom: 10px; padding: 14px; }
+  .order-person { font-family: 'Noto Serif TC', serif; font-size: 14px; font-weight: 900; color: var(--red); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; }
+  .order-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: var(--dark); }
+  .order-detail { font-size: 10px; color: var(--mid); }
+  .order-price { font-weight: 700; color: var(--red); }
+  .grand-card { background: var(--dark); color: white; border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-top: 14px; }
+  .grand-card .glabel { font-size: 12px; color: rgba(255,255,255,0.6); }
+  .grand-card .gamount { font-family: 'Noto Serif TC', serif; font-size: 30px; font-weight: 900; color: var(--accent); }
+  .empty-note { text-align: center; color: var(--mid); font-size: 13px; padding: 40px 20px; opacity: 0.6; }
+  .tag { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+  .tag-food { background: rgba(201,59,26,0.1); color: var(--red); }
+  .tag-drink { background: rgba(46,125,79,0.1); color: var(--green); }
+  .summary-meta { font-size: 11px; color: var(--mid); margin-bottom: 12px; padding: 8px 12px; background: var(--warm-gray); border-radius: 8px; }
+
+  /* SETUP NOTICE */
+  .setup-notice { background: #fff8e1; border: 1.5px solid var(--accent); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+  .setup-notice h3 { font-size: 13px; font-weight: 700; color: #7a5000; margin-bottom: 6px; }
+  .setup-notice p { font-size: 11px; color: #7a5000; line-height: 1.7; }
+  .setup-notice code { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🥪 公司點餐統計</h1>
+  <div class="subtitle">真芳三明治 — 全公司共用版</div>
+</header>
+
+<div class="total-bar">
+  <div>
+    <div class="label">目前小計</div>
+    <div class="amount" id="globalTotal">$0</div>
+  </div>
+  <div class="drink-note">☕ <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" class="qingshan-link">青山</a>飲料<br>請自行從預算扣除</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('menu',this)">🥪 菜單</div>
+  <div class="tab" onclick="switchTab('confirm',this)">✅ 確認送出</div>
+  <div class="tab" onclick="switchTab('summary',this)">📋 彙整結果</div>
+</div>
+
+<!-- ===== TAB 1: MENU ===== -->
+<div class="panel active" id="tab-menu">
+
+  <div class="note">點選品項加入，展開可選客製（換花醬）。確認完畢後到「確認送出」頁面填名字送出。</div>
+
+  <div class="name-section" style="border-color:var(--border);border-width:1.5px;">
+    <label>YOUR NAME・先填好你的名字</label>
+    <input class="name-input" id="nameInput" placeholder="輸入你的名字（送出前必填）" oninput="updateNamePreview()">
+  </div>
+
+  <!-- 招牌 -->
+  <div class="sec"><span class="badge">招牌</span> 真芳三明治</div>
+
+  <!-- 豬肉排 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('zf-pig')">
+      <div class="item-name">真芳三明治・手打胛心豬肉排<span class="item-sub">特製吐司、自製檸檬醬、限量金瓜沙拉、高麗菜、切達起司、特製花生醬、大武山雞蛋</span></div>
+      <div class="item-price">$110<small>元</small></div>
+      <span class="arrow" id="arr-zf-pig">▼</span>
+    </div>
+    <div class="vari-panel" id="v-zf-pig">
+      <div class="vari-label">醬料選擇</div>
+      <div class="vari-opts" id="opt-zf-pig">
+        <button class="vbtn sel" onclick="selV('zf-pig','醬料','原味花生醬',this)">原味花生醬</button>
+        <button class="vbtn" onclick="selV('zf-pig','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('zf-pig',110,-1)">−</button>
+          <div class="qnum" id="q-zf-pig">0</div>
+          <button class="qbtn" onclick="chg('zf-pig',110,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 舒肥雞 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('zf-chk')">
+      <div class="item-name">真芳三明治・舒肥雞胸肉<span class="item-sub">特製吐司、自製檸檬醬、限量金瓜沙拉、高麗菜、切達起司、特製花生醬、大武山雞蛋</span></div>
+      <div class="item-price">$150<small>元</small></div>
+      <span class="arrow" id="arr-zf-chk">▼</span>
+    </div>
+    <div class="vari-panel" id="v-zf-chk">
+      <div class="vari-label">醬料選擇</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('zf-chk','醬料','原味花生醬',this)">原味花生醬</button>
+        <button class="vbtn" onclick="selV('zf-chk','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('zf-chk',150,-1)">−</button>
+          <div class="qnum" id="q-zf-chk">0</div>
+          <button class="qbtn" onclick="chg('zf-chk',150,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 鹹的 -->
+  <div class="sec">鹹的 SAVOURY</div>
+
+  <!-- 雞肉蛋起司 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('chk-egg')">
+      <div class="item-name">雞肉蛋起司<span class="item-sub">特製吐司、自製檸檬醬、舒肥雞胸肉、切達起司、大武山雞蛋</span></div>
+      <div class="item-price">$110<small>元</small></div>
+      <span class="arrow" id="arr-chk-egg">▼</span>
+    </div>
+    <div class="vari-panel" id="v-chk-egg">
+      <div class="vari-label">吐司換花醬</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('chk-egg','醬料','原味',this)">原味</button>
+        <button class="vbtn" onclick="selV('chk-egg','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('chk-egg',110,-1)">−</button>
+          <div class="qnum" id="q-chk-egg">0</div>
+          <button class="qbtn" onclick="chg('chk-egg',110,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 豬肉蛋起司 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('pig-egg')">
+      <div class="item-name">豬肉蛋起司<span class="item-sub">特製吐司、自製檸檬醬、手打胛心豬肉排、切達起司、大武山雞蛋</span></div>
+      <div class="item-price">$75<small>元</small></div>
+      <span class="arrow" id="arr-pig-egg">▼</span>
+    </div>
+    <div class="vari-panel" id="v-pig-egg">
+      <div class="vari-label">吐司換花醬</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('pig-egg','醬料','原味',this)">原味</button>
+        <button class="vbtn" onclick="selV('pig-egg','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('pig-egg',75,-1)">−</button>
+          <div class="qnum" id="q-pig-egg">0</div>
+          <button class="qbtn" onclick="chg('pig-egg',75,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 辣肉蛋起司 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('spy-egg')">
+      <div class="item-name">辣肉蛋起司<span class="item-sub">特製吐司、自製檸檬醬、手打胛心豬肉排、切達起司、古早味辣醬、大武山雞蛋</span></div>
+      <div class="item-price">$75<small>元</small></div>
+      <span class="arrow" id="arr-spy-egg">▼</span>
+    </div>
+    <div class="vari-panel" id="v-spy-egg">
+      <div class="vari-label">吐司換花醬</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('spy-egg','醬料','原味',this)">原味</button>
+        <button class="vbtn" onclick="selV('spy-egg','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('spy-egg',75,-1)">−</button>
+          <div class="qnum" id="q-spy-egg">0</div>
+          <button class="qbtn" onclick="chg('spy-egg',75,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 起司起司蛋 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('cs-egg')">
+      <div class="item-name">起司起司蛋 🌿<span class="item-sub">特製吐司、自製檸檬醬、莫扎瑞拉起司、切達起司、大武山雞蛋</span></div>
+      <div class="item-price">$60<small>元</small></div>
+      <span class="arrow" id="arr-cs-egg">▼</span>
+    </div>
+    <div class="vari-panel" id="v-cs-egg">
+      <div class="vari-label">吐司換花醬</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('cs-egg','醬料','原味',this)">原味</button>
+        <button class="vbtn" onclick="selV('cs-egg','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('cs-egg',60,-1)">−</button>
+          <div class="qnum" id="q-cs-egg">0</div>
+          <button class="qbtn" onclick="chg('cs-egg',60,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 金瓜薯泥蛋 -->
+  <div class="card">
+    <div class="card-header" onclick="toggleV('pk-egg')">
+      <div class="item-name">金瓜薯泥蛋 🌿<span class="item-sub">特製吐司、自製檸檬醬、限量馬鈴薯金瓜沙拉、大武山雞蛋</span></div>
+      <div class="item-price">$60<small>元</small></div>
+      <span class="arrow" id="arr-pk-egg">▼</span>
+    </div>
+    <div class="vari-panel" id="v-pk-egg">
+      <div class="vari-label">吐司換花醬</div>
+      <div class="vari-opts">
+        <button class="vbtn sel" onclick="selV('pk-egg','醬料','原味',this)">原味</button>
+        <button class="vbtn" onclick="selV('pk-egg','醬料','換花醬',this)">換花醬</button>
+      </div>
+      <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+        <div class="qty-ctrl">
+          <button class="qbtn minus" onclick="chg('pk-egg',60,-1)">−</button>
+          <div class="qnum" id="q-pk-egg">0</div>
+          <button class="qbtn" onclick="chg('pk-egg',60,1)">＋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 蛋餅 + 蘿蔔糕 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">真芳鮮嫩蛋餅 ⭐🌿<span class="item-sub">麵粉、鹽、胡椒、蔥、韭菜、大武山雞蛋</span></div>
+      <div class="item-price">$40<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('egg-cake',40,-1)">−</button>
+        <div class="qnum" id="q-egg-cake">0</div>
+        <button class="qbtn" onclick="chg('egg-cake',40,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">台味蘿蔔糕<span class="item-sub">在來米、白蘿蔔、火腿、蝦米</span></div>
+      <div class="item-price">$60<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('turnip',60,-1)">−</button>
+        <div class="qnum" id="q-turnip">0</div>
+        <button class="qbtn" onclick="chg('turnip',60,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 甜的 -->
+  <div class="sec">甜的 SWEET・特製吐司 TOAST</div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">花生花生<span class="item-sub">特製花生醬、手炒花生粒、特製吐司</span></div>
+      <div class="item-price">$50<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('pb-pb',50,-1)">−</button>
+        <div class="qnum" id="q-pb-pb">0</div>
+        <button class="qbtn" onclick="chg('pb-pb',50,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">煉乳起司<span class="item-sub">牧場鮮奶油、糖、鮮奶、切達起司、特製吐司</span></div>
+      <div class="item-price">$50<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('milk-cs',50,-1)">−</button>
+        <div class="qnum" id="q-milk-cs">0</div>
+        <button class="qbtn" onclick="chg('milk-cs',50,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">草莓巧克力<span class="item-sub">阿華田燕麥力抹醬、草莓醬、焦糖脆餅粒、特製吐司</span></div>
+      <div class="item-price">$50<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('straw-choco',50,-1)">−</button>
+        <div class="qnum" id="q-straw-choco">0</div>
+        <button class="qbtn" onclick="chg('straw-choco',50,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="item-name">花生巧克力 🌿<span class="item-sub">阿華田燕麥力抹醬、特製花生醬、手炒花生粒、特製吐司</span></div>
+      <div class="item-price">$50<small>元</small></div>
+      <div class="qty-ctrl">
+        <button class="qbtn minus" onclick="chg('pb-choco',50,-1)">−</button>
+        <div class="qnum" id="q-pb-choco">0</div>
+        <button class="qbtn" onclick="chg('pb-choco',50,1)">＋</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 喝的 -->
+  <div class="sec">喝的 DRINK <span style="font-size:10px;font-weight:400;color:var(--accent);font-family:'Noto Sans TC';letter-spacing:0;">真芳自家飲料</span></div>
+  <div class="note">⚠️ 下方為真芳自家飲料，另點 <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" class="qingshan-link">青山</a> 飲料請自行扣除，不計入此表單</div>
+
+  <div class="card"><div class="card-header"><div class="item-name">紅茶牛奶</div><div class="item-price">$55<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('mtea',55,-1)">−</button><div class="qnum" id="q-mtea">0</div><button class="qbtn" onclick="chg('mtea',55,1)">＋</button></div></div></div>
+  <div class="card"><div class="card-header"><div class="item-name">紅茶</div><div class="item-price">$40<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('btea',40,-1)">−</button><div class="qnum" id="q-btea">0</div><button class="qbtn" onclick="chg('btea',40,1)">＋</button></div></div></div>
+  <div class="card"><div class="card-header"><div class="item-name">黑咖啡</div><div class="item-price">$50<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('bcoff',50,-1)">−</button><div class="qnum" id="q-bcoff">0</div><button class="qbtn" onclick="chg('bcoff',50,1)">＋</button></div></div></div>
+  <div class="card"><div class="card-header"><div class="item-name">原味濃豆奶</div><div class="item-price">$50<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('soyp',50,-1)">−</button><div class="qnum" id="q-soyp">0</div><button class="qbtn" onclick="chg('soyp',50,1)">＋</button></div></div></div>
+  <div class="card"><div class="card-header"><div class="item-name">芝麻濃豆奶</div><div class="item-price">$50<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('soys',50,-1)">−</button><div class="qnum" id="q-soys">0</div><button class="qbtn" onclick="chg('soys',50,1)">＋</button></div></div></div>
+  <div class="card"><div class="card-header"><div class="item-name">冷泡紅茶</div><div class="item-price">$40<small>元</small></div><div class="qty-ctrl"><button class="qbtn minus" onclick="chg('ctea',40,-1)">−</button><div class="qnum" id="q-ctea">0</div><button class="qbtn" onclick="chg('ctea',40,1)">＋</button></div></div></div>
+
+  <div style="height:20px;"></div>
+</div>
+
+<!-- ===== TAB 2: CONFIRM ===== -->
+<div class="panel" id="tab-confirm">
+  <div id="confirm-content"></div>
+</div>
+
+<!-- ===== TAB 3: SUMMARY ===== -->
+<div class="panel" id="tab-summary">
+  <button class="load-btn" onclick="loadSummary()">🔄 載入最新訂單彙整</button>
+  <div id="summary-content"><div class="empty-note">點擊上方按鈕載入全公司訂單</div></div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaAFhESixCJPVenkXu7EYED53QMLgK-on-r3MVkyfwGsEvKOldPM_z_p2AodyC8JoG/exec';
+const CSV_URL    = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTcIBvQjSx98_GgKuDzDDUqpHdok_NxMsywwvCgy59fJoxRzUPA0Fx2_eGl_BgYBO_tznC9WluFKCBu/pub?gid=0&single=true&output=csv';
+
+// ─── ITEMS ────────────────────────────────────────────────
+const ITEMS = {
+  'zf-pig':    { name:'真芳三明治・豬肉排', price:110, v:true },
+  'zf-chk':   { name:'真芳三明治・舒肥雞', price:150, v:true },
+  'chk-egg':  { name:'雞肉蛋起司', price:110, v:true },
+  'pig-egg':  { name:'豬肉蛋起司', price:75, v:true },
+  'spy-egg':  { name:'辣肉蛋起司', price:75, v:true },
+  'cs-egg':   { name:'起司起司蛋', price:60, v:true },
+  'pk-egg':   { name:'金瓜薯泥蛋', price:60, v:true },
+  'egg-cake': { name:'真芳鮮嫩蛋餅', price:40 },
+  'turnip':   { name:'台味蘿蔔糕', price:60 },
+  'pb-pb':    { name:'花生花生', price:50 },
+  'milk-cs':  { name:'煉乳起司', price:50 },
+  'straw-choco':{ name:'草莓巧克力', price:50 },
+  'pb-choco': { name:'花生巧克力', price:50 },
+  'mtea':     { name:'紅茶牛奶', price:55, drink:true },
+  'btea':     { name:'紅茶', price:40, drink:true },
+  'bcoff':    { name:'黑咖啡', price:50, drink:true },
+  'soyp':     { name:'原味濃豆奶', price:50, drink:true },
+  'soys':     { name:'芝麻濃豆奶', price:50, drink:true },
+  'ctea':     { name:'冷泡紅茶', price:40, drink:true },
+};
+
+const state = {};
+const variants = {};
+Object.keys(ITEMS).forEach(id => {
+  state[id] = 0;
+  if (ITEMS[id].v) variants[id] = { '醬料': '原味' };
+});
+
+// ─── QTY ──────────────────────────────────────────────────
+function chg(id, price, delta) {
+  state[id] = Math.max(0, state[id] + delta);
+  document.getElementById('q-' + id).textContent = state[id];
+  if (ITEMS[id].v && state[id] === 1 && delta === 1) {
+    const vp = document.getElementById('v-' + id);
+    if (vp && !vp.classList.contains('open')) {
+      vp.classList.add('open');
+      document.getElementById('arr-' + id)?.classList.add('open');
+    }
+  }
+  updateTotal();
+}
+
+function toggleV(id) {
+  document.getElementById('v-' + id)?.classList.toggle('open');
+  document.getElementById('arr-' + id)?.classList.toggle('open');
+}
+
+function selV(itemId, cat, val, btn) {
+  if (!variants[itemId]) variants[itemId] = {};
+  variants[itemId][cat] = val;
+  btn.parentElement.querySelectorAll('.vbtn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function updateTotal() {
+  let total = 0;
+  Object.keys(state).forEach(id => total += state[id] * ITEMS[id].price);
+  document.getElementById('globalTotal').textContent = '$' + total.toLocaleString();
+}
+
+function updateNamePreview() {}
+
+// ─── TABS ─────────────────────────────────────────────────
+function switchTab(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  if (name === 'confirm') renderConfirm();
+}
+
+// ─── CONFIRM PAGE ─────────────────────────────────────────
+function renderConfirm() {
+  const container = document.getElementById('confirm-content');
+  const name = document.getElementById('nameInput').value.trim();
+  let total = 0;
+  let items = [];
+
+  Object.keys(state).forEach(id => {
+    if (state[id] > 0) {
+      const item = ITEMS[id];
+      const sub = state[id] * item.price;
+      total += sub;
+      const varStr = variants[id] ? Object.values(variants[id]).join('、') : '';
+      items.push({ id, name: item.name, qty: state[id], price: item.price, sub, varStr, drink: item.drink });
+    }
+  });
+
+  if (items.length === 0) {
+    container.innerHTML = '<div class="empty-note">尚未選擇任何品項<br>請先到「菜單」頁面加入品項</div>';
+    return;
+  }
+
+  const rows = items.map(it => `
+    <div class="order-row">
+      <div>
+        ${it.name} × ${it.qty}
+        <span class="tag ${it.drink ? 'tag-drink' : 'tag-food'}">${it.drink ? '飲料' : '餐點'}</span>
+        ${it.varStr ? `<div class="order-detail">客製：${it.varStr}</div>` : ''}
+      </div>
+      <div class="order-price">$${it.sub}</div>
+    </div>`).join('');
+
+  container.innerHTML = `
+    <div class="name-section">
+      <label>YOUR NAME・確認你的名字</label>
+      <input class="name-input" id="nameInput2" placeholder="輸入你的名字" value="${name}" oninput="document.getElementById('nameInput').value=this.value">
+    </div>
+    <div class="order-card">
+      <div class="order-person">
+        <span>📋 我的點餐明細</span>
+        <span style="color:var(--dark);font-size:13px;" id="nameDisplay">${name || '（未填名字）'}</span>
+      </div>
+      ${rows}
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--warm-gray);display:flex;justify-content:space-between;font-weight:700;font-size:14px;">
+        <span>合計</span><span style="color:var(--red)">$${total.toLocaleString()}</span>
+      </div>
+    </div>
+    <div class="note">☕ 若另點 <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" class="qingshan-link">青山</a> 飲料，費用不含在此，請自行從預算扣除</div>
+    <button class="submit-btn" id="submitBtn" onclick="submitOrder()">📤 送出訂單</button>
+    <div id="submitStatus" style="text-align:center;font-size:12px;color:var(--mid);margin-top:8px;"></div>
+  `;
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────
+async function submitOrder() {
+  const name = (document.getElementById('nameInput2') || document.getElementById('nameInput')).value.trim();
+  if (!name) { alert('請先填寫你的名字！'); return; }
+
+  let items = [];
+  Object.keys(state).forEach(id => {
+    if (state[id] > 0) {
+      const varStr = variants[id] ? Object.values(variants[id]).join('、') : '';
+      items.push({ name: ITEMS[id].name, qty: state[id], price: ITEMS[id].price, variant: varStr });
+    }
+  });
+
+  if (items.length === 0) { alert('請先選擇品項！'); return; }
+  if (!SCRIPT_URL) { alert('尚未設定 Apps Script URL，請到「彙整結果」頁面輸入網址'); return; }
+
+  const btn = document.getElementById('submitBtn');
+  const status = document.getElementById('submitStatus');
+  btn.disabled = true;
+  btn.textContent = '送出中…';
+
+  const payload = {
+    name,
+    items,
+    total: items.reduce((s, i) => s + i.qty * i.price, 0),
+    timestamp: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' })
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showSuccess(name, payload.total);
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = '📤 送出訂單';
+    status.textContent = '❌ 送出失敗，請確認網路連線或 Script URL 是否正確';
+  }
+}
+
+function showSuccess(name, total) {
+  document.getElementById('confirm-content').innerHTML = `
+    <div class="success-box">
+      <div class="success-icon">🎉</div>
+      <div class="success-title">送出成功！</div>
+      <div class="success-sub">
+        <strong>${name}</strong> 的訂單已記錄<br>
+        本次金額：<strong style="color:var(--red)">$${total}</strong><br><br>
+        ☕ 若有另點 <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" style="color:var(--accent);font-weight:700;">青山</a> 飲料<br>請記得自行從預算扣除
+      </div>
+      <button class="reorder-btn" onclick="resetAndNew()">重新點餐</button>
+    </div>`;
+}
+
+function resetAndNew() {
+  Object.keys(state).forEach(id => {
+    state[id] = 0;
+    const el = document.getElementById('q-' + id);
+    if (el) el.textContent = 0;
+  });
+  updateTotal();
+  document.getElementById('nameInput').value = '';
+  switchTab('menu', document.querySelectorAll('.tab')[0]);
+}
+
+// ─── SUMMARY ─────────────────────────────────────────────
+
+// 解析 CSV 文字 → 考慮欄位內有逗號的情況
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  return lines.slice(1).map(line => {
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    cols.push(cur.trim());
+    return cols;
+  }).filter(r => r[0]);
+}
+
+async function loadSummary() {
+  if (!CSV_URL) {
+    alert('請先在上方設定 Google Sheet CSV 網址');
+    checkSetupNotice();
+    return;
+  }
+  const container = document.getElementById('summary-content');
+  container.innerHTML = '<div class="empty-note">載入中…</div>';
+
+  try {
+    // 加時間戳避免 cache
+    const res = await fetch(CSV_URL + '&t=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    renderSummary(rows);
+  } catch (e) {
+    container.innerHTML = `
+      <div class="empty-note">
+        ❌ 載入失敗<br><br>
+        <span style="font-size:11px;">請確認：<br>
+        1. Google Sheet 已設定「發布到網路」<br>
+        2. 發布格式選「逗號分隔值 (.csv)」<br>
+        3. CSV 網址已正確填入設定欄位</span>
+      </div>`;
+  }
+}
+
+function renderSummary(rows) {
+  const container = document.getElementById('summary-content');
+  if (!rows || rows.length === 0) {
+    container.innerHTML = '<div class="empty-note">目前尚無訂單記錄</div>';
+    return;
+  }
+
+  // 欄位：0=時間, 1=姓名, 2=品項, 3=數量, 4=單價, 5=客製, 6=小計, 7=總計
+  const orders = {};
+  rows.forEach(r => {
+    const key = r[0] + '_' + r[1];
+    if (!orders[key]) orders[key] = {
+      timestamp: r[0], name: r[1], items: [], total: parseInt(r[7]) || 0
+    };
+    orders[key].items.push({
+      name: r[2], qty: parseInt(r[3]) || 1,
+      price: parseInt(r[4]) || 0, variant: r[5],
+      sub: parseInt(r[6]) || 0
+    });
+  });
+
+  const list = Object.values(orders);
+  let grandTotal = list.reduce((s, o) => s + o.total, 0);
+
+  const cards = list.map(o => {
+    const itemRows = o.items.map(it => `
+      <div class="order-row">
+        <div>
+          ${it.name} × ${it.qty}
+          ${it.variant ? `<div class="order-detail">客製：${it.variant}</div>` : ''}
+        </div>
+        <div class="order-price">$${it.sub}</div>
+      </div>`).join('');
+    return `
+      <div class="order-card">
+        <div class="order-person">
+          <span>👤 ${o.name}</span>
+          <span style="color:var(--mid);font-size:11px;">${o.timestamp}</span>
+        </div>
+        ${itemRows}
+        <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--warm-gray);display:flex;justify-content:space-between;font-weight:700;font-size:13px;">
+          <span>小計</span><span style="color:var(--red)">$${o.total}</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="summary-meta">共 ${list.length} 人・${rows.length} 筆品項・不含 <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" style="color:var(--red);font-weight:700;text-decoration:underline;">青山</a> 飲料</div>
+    ${cards}
+    <div class="grand-card">
+      <div>
+        <div class="glabel">全公司合計</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">不含 <a href="https://order.nidin.shop/gb/menu/27433/suA3XCZT2O" target="_blank" style="color:rgba(255,255,255,0.5);text-decoration:underline;">青山</a> 飲料</div>
+      </div>
+      <div class="gamount">$${grandTotal.toLocaleString()}</div>
+    </div>`;
+}
+
+// init
+updateTotal();
+</script>
+</body>
+</html>
